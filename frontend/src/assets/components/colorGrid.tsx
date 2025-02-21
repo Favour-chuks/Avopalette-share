@@ -2,13 +2,25 @@ import './styles/colorgrid.css'
 
 const ColorGrid = () => {
   return (
-    <div className="gridContainer">
-      <div className="jp gridItems"></div>
-      <div className="jp gridItems"></div>
-      <div className="jp gridItems"></div>
-      <div className="jp gridItems"></div>
-      <div className="jp gridItems"></div>
-      <div className="jp gridItems"></div>
+    <div className="gridContainer font-extrabold">
+      <div className="gridItems">
+        maroon
+      </div>
+      <div className="gridItems">
+        hex code
+      </div>
+      <div className="gridItems">
+        new Code
+      </div>
+      <div className="gridItems">
+        code index
+      </div>
+      <div className="gridItems">
+        new index
+      </div>
+      <div className="gridItems">
+        new items
+      </div>
     </div>
   );
 };

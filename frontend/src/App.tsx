@@ -1,12 +1,16 @@
-import CollageIndex from "./assets/components/collageIndex";
-import ColorGrid from "./assets/components/colorGrid";
+// import CollageIndex from "./assets/components/collageIndex";
+// import ColorGrid from "./assets/components/colorGrid";
+import MosaicCanvas from "./assets/components/mosiacCanvas";
+// import ShareButton from "./assets/components/share"
 
 function App() {
   return (
     <>
-      <CollageIndex>
+      {/* <CollageIndex>
       <ColorGrid/>
-      </CollageIndex>
+      </CollageIndex>       */}
+      {/* <ShareButton/> */}
+      <MosaicCanvas/>
     </>
   );
 }
