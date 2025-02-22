@@ -6,7 +6,7 @@ const generateColors = (rows:any, cols:any) => {
   );
 };
 
-export default function MosaicCanvas() {
+export default function CanvasMosiac() {
   const rows = 80;
   const cols = 80;
   const pixelSize = 10;
