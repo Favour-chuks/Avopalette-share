@@ -1,84 +1,112 @@
-import React, { useState, useRef } from 'react';
-import { captureImage } from '../../utils/captureImage';
-import CollageIndex from './collageIndex';
+import React, { useRef } from 'react';
+import html2canvas from 'html2canvas';
 
-interface LinkPreviewProps {
-  url: string;
+interface ComponentProps {
+  children: React.ReactNode;
 }
 
-const LinkPreview: React.FC<LinkPreviewProps> = ({ url }) => {
-  const [preview, setPreview] = useState<{ title: string; description: string; image: string } | null>(null);
+function Share({ children }: ComponentProps) {
+  const containerRef = useRef<HTMLDivElement>(null); // Reference for the div
 
-  const fetchPreview = async () => {
-    // Mocking a fetch call to get link preview data
-    // Replace this with actual API call to fetch link preview data
-    const response = await new Promise<{ title: string; description: string; image: string }>((resolve) => {
-      const title = prompt("Enter title:");
-      const description = prompt("Enter description:");
-      resolve({ title: title || '', description: description || '', image: '' });
-    });
+  const handleDownload = async () => {
+    if (containerRef.current) {
+      try {
+        // Convert the component into an image using html2canvas
+        const canvas = await html2canvas(containerRef.current);
+        const image = canvas.toDataURL("image/png");
 
-    // Use the captureImage utility function to capture the specified element as an image
-    const image = await captureImage('capture-element');
-
-    setPreview({
-      title: response.title,
-      description: response.description,
-      image: image,
-    });
+        // Download the image
+        const link = document.createElement("a");
+        link.download = "collage.png";
+        link.href = image;
+        link.click();
+      } catch (error) {
+        console.error("Error generating image:", error);
+      }
+    } else {
+      console.error("Container reference is null");
+    }
   };
-
-  React.useEffect(() => {
-    fetchPreview();
-  }, [url]);
-
-  if (!preview) {
-    return <div>Loading preview...</div>;
-  }
-
-  return (
-    <div className="link-preview">
-      <a href={preview.image} download>
-        <img src={preview.image} alt={preview.title} />
-      </a>
-      <h3>{preview.title}</h3>
-      <p>{preview.description}</p>
-    </div>
-  );
-};
-
-function ShareButton() {
-  const [link, setLink] = useState('');
-  const [showPreview, setShowPreview] = useState(false);
-  const collageRef = useRef<HTMLDivElement>(null);
 
   const handleShare = async () => {
-    if (collageRef.current) {
-      const image = await captureImage('capture-element');
-      // Implement your sharing logic here using the captured image
-      console.log('Captured image:', image);
+    if (containerRef.current) {
+      try {
+        // Convert the component into an image using html2canvas
+        const canvas = await html2canvas(containerRef.current);
+        const image = canvas.toDataURL("image/png");
+
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([], "")] })) {
+          try {
+            const blob = await fetch(image).then((res) => res.blob());
+            const file = new File([blob], "share.png", { type: "image/png" });
+            await navigator.share({
+              title: 'Avo pics Palette',
+              files: [file],
+            });
+          } catch (error) {
+            console.error("Share failed:", error);
+          }
+        } else {
+          // Fallback: Download the image
+          const link = document.createElement("a");
+          link.download = "AvopicsPalette.png";
+          link.href = image;
+          link.click();
+        }
+      } catch (error) {
+        console.error("Error generating image:", error);
+      }
+    } else {
+      console.error("Container reference is null");
     }
-    setShowPreview(true);
   };
 
   return (
-    <div className="share-button">
-      <input
-        type="text"
-        value={link}
-        onChange={(e) => setLink(e.target.value)}
-        placeholder="Enter link to share"
-      />
-      <button onClick={handleShare}>Share</button>
-      <div id="capture-element" ref={collageRef}>
-        <CollageIndex>
-          {/* Your content here */}
-          <div>Your content here</div>
-        </CollageIndex>
+    <div>
+      <div style={{ display: 'grid', placeItems: 'center' }}>
+        <div ref={containerRef}>
+          {children}
+        </div>
       </div>
-      {showPreview && <LinkPreview url={link} />}
+
+      {/* buttons and stuff */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: '20px',
+        marginTop: '20px'
+      }}>
+        <button
+          onClick={handleShare}
+          style={{
+            padding: "10px 20px",
+            backgroundColor: "#007BFF",
+            color: "#fff",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
+        >
+          Share
+        </button>
+
+        <button
+          onClick={handleDownload}
+          style={{
+            padding: "10px 20px",
+            backgroundColor: "#007BFF",
+            color: "#fff",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
+        >
+          Download
+        </button>
+      </div>
     </div>
   );
 }
 
-export default ShareButton;
+export default Share;
