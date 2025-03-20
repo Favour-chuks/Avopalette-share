@@ -1,4 +1,4 @@
-import React from "react";
+import { useState } from "react";
 // import { Button } from "./ui/button";
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 import { Bold, Italic, Underline } from "lucide-react";
@@ -6,35 +6,44 @@ import { Slider } from "./ui/slider";
 import ColorPicker from "./color-picker";
 
 function SideBar() {
-  const [activeItem, setActiveItem] = React.useState<string>("");
-  const [density, setDensity] = React.useState<number[]>([50]);
-  const [opacity, setOpacity] = React.useState<number[]>([100]);
-  const [selectedColor, setSelectedColor] = React.useState<string[]>([
+  const [activeItem, setActiveItem] = useState<string>("");
+  const [density, setDensity] = useState<number[]>([50]);
+  const [selectedColors, setSelectedColors] = useState([
     "#aabbcc",
     "#ddeeff",
     "#112233",
     "#445566",
     "#778899",
   ]);
+  const [opacities, setOpacities] = useState([1, 1, 1, 1, 1]); // Default opacity = 1 for all
 
-  const handleColorChange = (index: number, newColor: string) => {
-    const updatedColors = [...selectedColor];
+  const handleColorChange = (
+    index: number,
+    newColor: string,
+    newOpacity: number
+  ) => {
+    const updatedColors = [...selectedColors];
+    const updatedOpacities = [...opacities];
+
     updatedColors[index] = newColor;
-    setSelectedColor(updatedColors);
+    updatedOpacities[index] = newOpacity;
+
+    setSelectedColors(updatedColors);
+    setOpacities(updatedOpacities);
   };
 
   return (
     <div className="flex flex-col gap-[16px] h-full w-[200px]">
-      <div>
+      <div className="flex flex-col gap-2">
         <h2>Color Picker</h2>
-        <div>
-          {selectedColor.map((index: any, color: any) => (
+        <div className="flex gap-1">
+          {selectedColors.map((color, index) => (
             <ColorPicker
               key={index}
+              index={index}
               color={color}
-              onColorChange={(newColor: string) =>
-                handleColorChange(index, newColor)
-              }
+              opacity={opacities[index]}
+              onChange={handleColorChange}
             />
           ))}
         </div>
@@ -67,6 +76,7 @@ function SideBar() {
           <h2>Density</h2>{" "}
           <span className="flex justify-center w-12 rounded-md border border-transparent px-2 py-0.5 text-right text-sm text-muted-foreground hover:border-border">
             {density}%
+            
           </span>
         </span>
         <Slider
@@ -77,21 +87,6 @@ function SideBar() {
         />
       </div>
 
-      {/* opacity sliders */}
-      <div className="flex flex-col gap-[16px] min-h-[58px]">
-        <span className="flex flex-row justify-between">
-          <h2>opacity</h2>{" "}
-          <span className="flex justify-center w-12 rounded-md border border-transparent px-2 py-0.5 text-right text-sm text-muted-foreground hover:border-border">
-            {opacity}%
-          </span>
-        </span>
-        <Slider
-          defaultValue={opacity}
-          max={100}
-          step={1}
-          onValueChange={(value) => setOpacity(value)}
-        />
-      </div>
     </div>
   );
 }
