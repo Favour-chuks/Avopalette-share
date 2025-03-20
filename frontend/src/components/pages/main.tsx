@@ -9,7 +9,7 @@ export default function MainPage() {
         <Header/>
         <Separator />
         <div className="flex flex-row h-full p-[24px] gap-[24px] overflow-clip">
-          <main className="flex-1 h-full w-full bg-gray-100 overflow-auto">
+          <main className="flex-1 h-full w-full p-[16px] bg-gray-100 rounded-xl overflow-auto">
             hello world
           </main>
 
