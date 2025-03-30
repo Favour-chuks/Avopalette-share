@@ -1,13 +1,12 @@
 import { useState } from "react";
-// import { Button } from "./ui/button";
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 import { Bold, Italic, Underline } from "lucide-react";
-import { Slider } from "./ui/slider";
 import ColorPicker from "./color-picker";
+import { SelectAspectRatio } from "./aspect-ratio-selector";
 
 function SideBar() {
-  const [activeItem, setActiveItem] = useState<string>("");
-  const [density, setDensity] = useState<number[]>([50]);
+  const [activeItem, setActiveItem] = useState("");
+  const [density, setDensity] = useState(1);
   const [selectedColors, setSelectedColors] = useState([
     "#aabbcc",
     "#ddeeff",
@@ -16,6 +15,11 @@ function SideBar() {
     "#778899",
   ]);
   const [opacities, setOpacities] = useState([1, 1, 1, 1, 1]); // Default opacity = 1 for all
+
+  const handleDensityChange = (newDensity: number) => {
+    setDensity(newDensity);
+    // Placeholder for inherited function call
+  };
 
   const handleColorChange = (
     index: number,
@@ -33,10 +37,11 @@ function SideBar() {
   };
 
   return (
-    <div className="flex flex-col gap-[16px] h-full w-[200px]">
+    <div className="flex flex-col gap-4 h-full w-[200px]">
+      {/* Color Picker Section */}
       <div className="flex flex-col gap-2">
-        <h2>Color Picker</h2>
-        <div className="flex gap-1">
+        <h2 className="text-lg font-semibold">Color Picker</h2>
+        <div className="flex justify-between">
           {selectedColors.map((color, index) => (
             <ColorPicker
               key={index}
@@ -48,45 +53,59 @@ function SideBar() {
           ))}
         </div>
       </div>
-      {/* toggle groups */}
-      <div className="flex flex-col gap-[8px] min-h-[58px]">
-        <h2>Mode</h2>
+
+      {/* Toggle Group Section */}
+      <div className="flex flex-col gap-2 min-h-[58px]">
+        <h2 className="text-lg font-semibold">Mode</h2>
         <ToggleGroup
           type="single"
           value={activeItem}
           onValueChange={(value) => setActiveItem(value)}
           size="custom"
-          className="w-full bg-gray-200 p-1 rounded-lg">
+          className="w-full bg-gray-200 p-1 rounded-lg"
+        >
           <ToggleGroupItem value="bold" aria-label="Toggle bold">
-            <Bold />
+            <Bold className="h-4 w-4" />
           </ToggleGroupItem>
           <ToggleGroupItem value="italic" aria-label="Toggle italic">
-            <Italic />
+            <Italic className="h-4 w-4" />
           </ToggleGroupItem>
           <ToggleGroupItem
             value="strikethrough"
-            aria-label="Toggle strikethrough">
+            aria-label="Toggle strikethrough"
+            disabled
+          >
             <Underline className="h-4 w-4" />
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
-      {/* density sliders */}
-      <div className="flex flex-col gap-[16px] min-h-[58px]">
-        <span className="flex flex-row justify-between">
-          <h2>Density</h2>{" "}
-          <span className="flex justify-center w-12 rounded-md border border-transparent px-2 py-0.5 text-right text-sm text-muted-foreground hover:border-border">
-            {density}%
-            
-          </span>
-        </span>
-        <Slider
-          defaultValue={density}
-          max={100}
-          step={1}
-          onValueChange={(value) => setDensity(value)}
-        />
+
+      {/* Density Slider Section */}
+      <div className="flex flex-col gap-2">
+        <h2 className="text-lg font-semibold">Density</h2>
+        <div className="flex items-center gap-2">
+          <span className="text-sm">Low</span>
+          <input
+            type="range"
+            min="1"
+            max="100000"
+            value={density}
+            onChange={(e) => handleDensityChange(Number(e.target.value))}
+            className="w-full"
+          />
+          <span className="text-sm">High</span>
+        </div>
       </div>
 
+      {/* this is for the aspect ratio toggle */}
+
+      <div className="flex flex-col gap-2">
+        <h2 className="text-lg font-semibold">Density</h2>
+        <div className="flex items-center gap-2">
+          {/* this is going to return the aspect ratio that would be passed in to the item */}
+          <SelectAspectRatio/>
+          </div>
+      </div>
     </div>
   );
 }

@@ -4,6 +4,7 @@
 // import MosaicCanvas from "./components/mosiac/mosiacCanvasShaded";
 // import Share from "./assets/components/share";
 // import { Button } from "./components/ui/button";
+import MosaicCanvas from "./components/mosiac/testMosiac";
 import MainPage from "./components/pages/main";
 // import Page from "./components/pages/pages";
 // import ScewedCanvasMosaic from "./assets/components/styles/mosiac/scewedMosiac";
@@ -12,45 +13,14 @@ import MainPage from "./components/pages/main";
 function App() {
   return (
     <>
-      {/* <Share>
-        <div
-          style={{ position: "relative", width: "100vw", height: "100vh" }}>
-          {/* <CollageIndex>
-      <ColorGrid/>
-      </CollageIndex>       */}
-          {/* <ShareButton/> */}
-          {/* <ScewedCanvasMosaic/> */}
-          {/* <MosaicCanvas />
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "100%", // Ensure the parent container has a defined height
-              width: "100%", // Ensure the parent container has a defined width
-              position: "absolute",
-              top: 0,
-              left: 0,
-            }}> */}
-            {/* <div
-          style={{
-            height: "80%",
-            width: "80%",
-            padding: "5%",
-            backgroundColor: "rgba(255, 255, 255, 0.5)",
-            zIndex: 1,
-            backdropFilter: "blur(8px)", // Apply blur to the background
-            WebkitBackdropFilter: "blur(8px)", // For Safari support
-          }}>
-          <h1>Your React Component</h1>
-          <p>This is a paragraph.</p>
-        </div> */}
-            {/* <Footer />
-          </div>
-        </div>
-        <Button>Click me</Button> */}
-      {/* </Share>  */}
-      {/* <Page /> */}
+    
+      <MosaicCanvas 
+        density={10} 
+        colors={["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF"]} 
+        width={500} 
+        height={500} 
+        aspectRatio={1.618}
+      />
       <MainPage/>
     </>
   );

@@ -61,20 +61,28 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
         <div className="flex flex-col gap-2">
           <label className="text-sm flex justify-between items-center">
             Opacity:
-            <span className="inline-flex items-center w-12 border border-transparent px-1 py-0.5 rounded-md text-sm text-muted-foreground hover:border-border">
+            <span className="inline-flex items-center gap-0.5 w-12 border border-transparent px-1 py-0.5 rounded-md text-sm text-muted-foreground hover:border-border focus-within:border-border">
               <input
-                className="w-10 text-right text-sm text-muted-foreground 
+                className="w-6 justify-center align-center  text-right text-sm text-muted-foreground 
                            border-0 appearance-none 
-                           focus:outline-none focus:ring-0 focus:border-transparent 
+                           focus:outline-none focus:ring-0 focus:border-0 
                            [&::-webkit-inner-spin-button]:appearance-none 
                            [&::-webkit-outer-spin-button]:appearance-none 
-                           [&::-moz-appearance:textfield]"
+                           [&::-moz-appearance:textfield]:appearance-none"
                 type="number"
                 min={0}
                 max={100}
+                onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  if (e.target.value.length > 3) {
+                    e.target.value = e.target.value.slice(0, 3); // Keep only first 3 digits
+                  }
+                }}
                 value={Math.round(localOpacity * 100)}
                 onChange={(e) => {
-                  let newValue = Math.min(100, Math.max(0, Number(e.target.value))); // Ensure within range
+                  let newValue = Math.min(
+                    100,
+                    Math.max(0, Number(e.target.value))
+                  ); // Ensure within range
                   handleOpacityChange(newValue / 100);
                 }}
               />
