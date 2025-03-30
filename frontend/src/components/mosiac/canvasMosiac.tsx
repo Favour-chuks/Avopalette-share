@@ -1,28 +1,35 @@
 import { Stage, Layer, Rect } from 'react-konva';
 
-const generateColors = (rows:any, cols:any) => {
-  return Array.from({ length: rows * cols }, () => 
-    '#' + Math.floor(Math.random() * 16777215).toString(16).padEnd(6, '0')
-  );
+const generateColors = (rows: number, cols: number, colors: string[]) => {
+  return Array.from({ length: rows * cols }, (_, index) => ({
+    color: colors[index % colors.length],
+  }));
 };
 
-export default function CanvasMosiac() {
-  const rows = 80;
-  const cols = 80;
-  const pixelSize = 10;
-  const colors = generateColors(rows, cols);
+interface CanvasMosiacProps {
+  density: number;
+  colors: string[];
+  width: number;
+  height: number;
+}
+
+export default function CanvasMosiac({ density, colors, width, height }: CanvasMosiacProps) {
+  const rows = Math.floor(height / density);
+  const cols = Math.floor(width / density);
+  const pixelSize = density;
+  const colorData = generateColors(rows, cols, colors);
 
   return (
-    <Stage width={window.innerWidth} height={window.innerHeight}>
+    <Stage width={width} height={height}>
       <Layer>
-        {colors.map((color, index) => (
+        {colorData.map((data, index) => (
           <Rect
             key={index}
             x={(index % cols) * pixelSize}
             y={Math.floor(index / cols) * pixelSize}
             width={pixelSize}
             height={pixelSize}
-            fill={color}
+            fill={data.color}
           />
         ))}
       </Layer>

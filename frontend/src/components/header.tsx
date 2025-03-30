@@ -16,7 +16,7 @@ function Header() {
           <span className="h-fit truncate text-xs">Enterprise</span>
         </div>
       </a>
-      <div className="w-full flex justify-end items-center gap-[6px] px-[48]">
+      <div className="w-full flex justify-end items-center gap-[6px] px-[48] ml-[18px]">
         <Separator orientation="vertical" />
         <div className="flex-grow flex justify-center">
           <input
@@ -27,7 +27,7 @@ function Header() {
           />
         </div>
         
-        <Separator orientation="vertical" />
+        <Separator orientation="vertical" className="mr-6"/>
         {/* this would be some type of small menu to be able to name the files and other stuff */}
         <Button
           size="custom"
