@@ -33,11 +33,35 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
   index,
   onChange,
 }) => {
-  const [localOpacity, setLocalOpacity] = useState(opacity); // Local state for tracking opacity
+  const [localColor, setLocalColor] = useState(color); // Local state for color
+  const [localOpacity, setLocalOpacity] = useState(opacity); // Local state for opacity
 
   const handleOpacityChange = (newOpacity: number) => {
     setLocalOpacity(newOpacity);
-    onChange(index, color, newOpacity);
+    onChange(index, localColor, newOpacity);
+  };
+
+  const handleColorInputChange = (inputValue: string) => {
+    let newColor = inputValue;
+
+    // Validate and convert RGB to HEX if necessary
+    if (/^rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/i.test(inputValue)) {
+      const rgbMatch = inputValue.match(/\d+/g);
+      if (rgbMatch) {
+        const [r, g, b] = rgbMatch.map(Number);
+        newColor = `#${((1 << 24) + (r << 16) + (g << 8) + b)
+          .toString(16)
+          .slice(1)}`;
+      }
+    }
+
+    // Ensure valid HEX format
+    if (/^#([0-9A-F]{3}){1,2}$/i.test(newColor)) {
+      setLocalColor(newColor); // Update local color state
+      onChange(index, newColor, localOpacity); // Notify parent component
+    } else {
+      console.error("Invalid color format. Please use HEX or RGB.");
+    }
   };
 
   return (
@@ -46,16 +70,33 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
         <Button
           className="w-[35px] h-[35px] rounded-full"
           style={{
-            backgroundColor: hexToRgba(color, localOpacity),
+            backgroundColor: hexToRgba(localColor, localOpacity),
           }}
         />
       </PopoverTrigger>
       <PopoverContent className="bg-white w-fit p-4 z-2 flex flex-col gap-3 shadow-xl">
         {/* Color Picker */}
         <HexColorPicker
-          color={color}
-          onChange={(newColor) => onChange(index, newColor, localOpacity)}
+          color={localColor}
+          onChange={(newColor) => {
+            setLocalColor(newColor); // Update local color state
+            onChange(index, newColor, localOpacity); // Notify parent component
+          }}
         />
+
+        {/* Color Input Field */}
+        <div className="flex flex-col gap-2">
+          <label className="text-sm flex justify-between items-center">
+            Color:
+            <input
+              className="w-full border border-border px-2 py-1 rounded-md text-sm text-muted-foreground focus:outline-none focus:ring-2 focus:ring-border"
+              type="text"
+              value={localColor}
+              onChange={(e) => handleColorInputChange(e.target.value)}
+              placeholder="Enter HEX or RGB"
+            />
+          </label>
+        </div>
 
         {/* Opacity Controls */}
         <div className="flex flex-col gap-2">
@@ -63,7 +104,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
             Opacity:
             <span className="inline-flex items-center gap-0.5 w-12 border border-transparent px-1 py-0.5 rounded-md text-sm text-muted-foreground hover:border-border focus-within:border-border">
               <input
-                className="w-6 justify-center align-center  text-right text-sm text-muted-foreground 
+                className="w-6 justify-center align-center text-right text-sm text-muted-foreground 
                            border-0 appearance-none 
                            focus:outline-none focus:ring-0 focus:border-0 
                            [&::-webkit-inner-spin-button]:appearance-none 

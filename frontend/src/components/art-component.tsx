@@ -1,10 +1,41 @@
-import { useState, useEffect } from 'react';
-import { Skeleton } from './ui/skeleton';
-import CanvasMosiac from './mosiac/canvasMosiac';
+import { useState, useEffect } from "react";
+import { Skeleton } from "./ui/skeleton";
+import CanvasMosiac from "./mosiac/canvasMosiac";
+import MosaicCanvas from "./mosiac/testMosiac";
 
-function ArtComponent({ density, colors, activeItem }: { density?: number; colors?: string[]; activeItem?: string; 
-  }) {
+interface ArtComponentProps {
+  density?: number;
+  colors?: string[];
+  activeItem?: string;
+  orintation?: string;
+}
+
+function ArtComponent({
+  density,
+  colors,
+  activeItem,
+  orintation,
+}: ArtComponentProps) {
   const [isLoading, setIsLoading] = useState(true);
+  const [aspectRatio, setAspectRatio] = useState(0);
+
+  // Update aspectRatio when orintation changes
+  useEffect(() => {
+    switch (orintation) {
+      case "Landscape":
+        setAspectRatio(1.618);
+        break;
+      case "Portrait":
+        setAspectRatio(1.33);
+        break;
+      case "Square":
+        setAspectRatio(1);
+        break;
+      default:
+        setAspectRatio(0); // Default value if orientation is invalid
+        break;
+    }
+  }, [orintation]); // Dependency array ensures this runs only when orintation changes
 
   // Check if required props are provided
   const hasProps = density !== undefined && colors?.length;
@@ -20,7 +51,13 @@ function ArtComponent({ density, colors, activeItem }: { density?: number; color
   if (isLoading || !hasProps) {
     return (
       <main className="flex-1 h-full w-full p-[16px] rounded-xl overflow-auto">
-        <Skeleton className="h-full w-full bg-gray-300" />
+        <Skeleton
+          className="bg-gray-300"
+          style={{
+            width: "100%",
+            height: `calc(100% / ${aspectRatio || 1})`, // Fallback to 1 if aspectRatio is 0
+          }}
+        />
       </main>
     );
   }
@@ -29,7 +66,7 @@ function ArtComponent({ density, colors, activeItem }: { density?: number; color
     <main className="flex-1 h-full w-full p-[16px] rounded-xl overflow-auto">
       <div className="h-full w-full">
         {/* Conditional Rendering Based on activeItem */}
-        {activeItem === 'bold' && (
+        {activeItem === "bold" && (
           <div>
             <CanvasMosiac
               density={density}
@@ -39,17 +76,25 @@ function ArtComponent({ density, colors, activeItem }: { density?: number; color
             />
           </div>
         )}
-        {activeItem === 'italic' && (
+        {activeItem === "italic" && (
           <div>
             <MosaicCanvas
-              density={density}
-              colors={colors}
+              density={density || 10}
+              colors={[
+                "#FF0000",
+                "#00FF00",
+                "#0000FF",
+                "#FFFF00",
+                "#FF00FF",
+                "#00FFFF",
+              ]}
+              aspectRatio={aspectRatio}
               width={500}
               height={500}
             />
-            </div>
+          </div>
         )}
-        {activeItem === 'strikethrough' && (
+        {activeItem === "strikethrough" && (
           <div>
             <h3 className="text-md line-through">Strikethrough Mode</h3>
             <p>Strikethrough mode is currently disabled.</p>

@@ -1,8 +1,22 @@
 import { Command } from "lucide-react";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
+import { SelectAspectRatio } from "./aspect-ratio-selector";
 
-function Header() {
+
+interface HeaderProps {
+  orientation: string; // Current orientation
+  onAspectRatioChange: (aspectRatio: string) => void; // Callback to update orientation
+  aspectRatios: { value: string; label: string }[]; // Predefined aspect ratios
+}
+
+
+//! there needs to be a way to save the files and a way to share them
+
+ function Header({
+  onAspectRatioChange,
+  aspectRatios,
+}: HeaderProps) {
   return (
     <header className="flex flex-row h-16 shrink-0 gap-4 px-[24px]">
       <a
@@ -22,13 +36,26 @@ function Header() {
           <input
             type="text"
             defaultValue="Untitled-01"
-            className="border border-transparent rounded px-2 py-1 text-center w-32 focus:border-[.5px] focus:border-gray-400"
+            className="border border-transparent rounded px-2 py-1 text-center w-auto max-w-[300px] focus:border-[.5px] focus:border-gray-400"
             onClick={(e) => e.currentTarget.select()}
+            onInput={(e) => {
+              const input = e.currentTarget;
+              const words = input.value.split(/\s+/).filter(Boolean);
+              if (words.length > 10) {
+          input.value = words.slice(0, 10).join(" ");
+              }
+              input.style.width = `${Math.min(input.scrollWidth, 300)}px`;
+            }}
           />
         </div>
         
         <Separator orientation="vertical" className="mr-6"/>
         {/* this would be some type of small menu to be able to name the files and other stuff */}
+        <SelectAspectRatio
+        aspectRatio={aspectRatios}
+        onSelect={onAspectRatioChange} // Notify parent about changes
+      />
+
         <Button
           size="custom"
           className="min-w-[70px] bg-blue-500 text-white hover:bg-blue-500 px-2 py-1">

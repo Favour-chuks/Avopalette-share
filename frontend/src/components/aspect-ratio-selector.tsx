@@ -1,91 +1,80 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
+import { Check, Proportions } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command"
+} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@radix-ui/react-popover"
+} from "@radix-ui/react-popover";
 
-type Status = {
-  value: string
-  label: string
+// Define the prop type for the component
+interface SelectAspectRatioProps {
+  aspectRatio: { value: string; label: string }[]; // Array of aspect ratios
+  onSelect: (aspectRatio: string) => void; // Callback for selection
 }
 
-const statuses: Status[] = [
-  {
-    value: "backlog",
-    label: "Backlog",
-  },
-  {
-    value: "todo",
-    label: "Todo",
-  },
-  {
-    value: "in progress",
-    label: "In Progress",
-  },
-  {
-    value: "done",
-    label: "Done",
-  },
-  {
-    value: "canceled",
-    label: "Canceled",
-  },
-]
+export function SelectAspectRatio({ aspectRatio, onSelect }: SelectAspectRatioProps) {
+  const [open, setOpen] = React.useState(false);
+  const [value, setValue] = React.useState("Landscape"); // Default to "Landscape"
 
-export function SelectAspectRatio() {
-  const [open, setOpen] = React.useState(false)
-  const [selectedStatus, setSelectedStatus] = React.useState<Status | null>(
-    null
-  )
+
+  const handleSelect = (currentValue: string) => {
+    setValue(currentValue === value ? "" : currentValue);
+    setOpen(false);
+    onSelect(currentValue); // Notify parent about the selection
+  };
 
   return (
-    <div className="flex items-center space-x-4">
-      <p className="text-sm text-muted-foreground">Status</p>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button variant="outline" className="w-[150px] justify-start">
-            {selectedStatus ? <>{selectedStatus.label}</> : <>+ Set status</>}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="p-0" side="right" align="start">
-          <Command>
-            <CommandInput placeholder="Change status..." />
-            <CommandList>
-              <CommandEmpty>No results found.</CommandEmpty>
-              <CommandGroup>
-                {statuses.map((status) => (
-                  <CommandItem
-                    key={status.value}
-                    value={status.value}
-                    onSelect={(value) => {
-                      setSelectedStatus(
-                        statuses.find((priority) => priority.value === value) ||
-                          null
-                      )
-                      setOpen(false)
-                    }}
-                  >
-                    {status.label}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-    </div>
-  )
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-[200px] justify-between">
+          {value
+            ? aspectRatio.find((aspectRatio) => aspectRatio.value === value)
+                ?.label
+            : "Select aspectRatio..."}
+          <Proportions className="opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[200px] p-0 z-50">
+        <Command>
+          <CommandList>
+            <CommandEmpty>No aspectRatio found.</CommandEmpty>
+            <CommandGroup>
+              {aspectRatio.map((aspectRatio) => (
+                <CommandItem
+                  key={aspectRatio.value}
+                  value={aspectRatio.value}
+                  onSelect={handleSelect}>
+                  {aspectRatio.label}
+                  <Check
+                    className={cn(
+                      "ml-auto",
+                      value === aspectRatio.value
+                        ? "opacity-100"
+                        : "opacity-0"
+                    )}
+                  />
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
 }
