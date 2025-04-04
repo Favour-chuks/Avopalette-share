@@ -1,6 +1,7 @@
 import { Stage, Layer, Rect } from 'react-konva';
 
 const generateColors = (rows: number, cols: number, colors: string[]) => {
+  console.log("Colors: ", colors);
   return Array.from({ length: rows * cols }, (_, index) => ({
     color: colors[index % colors.length],
   }));

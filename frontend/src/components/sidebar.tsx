@@ -6,24 +6,21 @@ import React from "react";
 import { Slider } from "./ui/slider";
 
 interface SideBarProps {
-  initialColors: string[];
-  initialOpacities: number[];
+  initialColors: string[]; // e.g. ["rgba(255,0,0,0.8)"]
   onDensityChange: (density: number) => void;
   onActiveItemChange: (item: string) => void;
-  onColorsChange: (colors: string[], opacities: number[]) => void;
+  onColorsChange: (rgbaColors: string[]) => void; // updated to return a single rgba list
 }
 
 function SideBar({
   initialColors,
-  initialOpacities,
   onColorsChange,
   onDensityChange,
-  onActiveItemChange
+  onActiveItemChange,
 }: SideBarProps) {
   const [activeItem, setActiveItem] = useState("");
   const [density, setDensity] = useState(1);
   const [selectedColors, setSelectedColors] = useState(initialColors);
-  const [opacities, setOpacities] = useState(initialOpacities);
 
   // State for context menu
   const [contextMenu, setContextMenu] = useState<{
@@ -35,65 +32,37 @@ function SideBar({
 
   useEffect(() => {
     console.log("Selected colors updated:", selectedColors);
-    console.log("Opacities updated:", opacities);
-  }, [selectedColors, opacities]);
+  }, [selectedColors]);
 
   const handleDensityChange = (newDensity: number) => {
     setDensity(newDensity);
     onDensityChange(newDensity); // Notify parent component
   };
 
-  const handleColorChange = (
-    index: number,
-    newColor: string,
-    newOpacity: number
-  ) => {
+  const handleColorChange = (index: number, newRgba: string) => {
     const updatedColors = [...selectedColors];
-    const updatedOpacities = [...opacities];
-
-    updatedColors[index] = newColor;
-    updatedOpacities[index] = newOpacity;
-
+    updatedColors[index] = newRgba;
     setSelectedColors(updatedColors);
-    setOpacities(updatedOpacities);
-
-    // Notify parent component of the changes
-    onColorsChange(updatedColors, updatedOpacities);
+    onColorsChange(updatedColors); // now returns only rgba list
   };
 
   const handleRemoveColor = () => {
     console.log("Removing color at index:", contextMenu.colorIndex);
     console.log("Current colors:", selectedColors);
-    if (contextMenu.colorIndex !== null) {
-      // Remove the color and opacity at the specified index
-      const updatedColors = selectedColors.filter(
-        (_, i) => i !== contextMenu.colorIndex
-      );
-      const updatedOpacities = opacities.filter(
-        (_, i) => i !== contextMenu.colorIndex
-      );
+    if (contextMenu.colorIndex === null) return;
 
-      setSelectedColors(updatedColors);
-      setOpacities(updatedOpacities);
-
-      // Notify parent component of the changes
-      onColorsChange(updatedColors, updatedOpacities);
-
-      // Hide context menu
-      handleCloseContextMenu(new MouseEvent("click") as unknown as React.MouseEvent);
-    }else {
-      console.error("No color index selected for removal.");
-    }
+    const updatedColors = selectedColors.filter(
+      (_, i) => i !== contextMenu.colorIndex
+    );
+    setSelectedColors(updatedColors);
+    onColorsChange(updatedColors);
   };
 
   const handleAddColor = () => {
-    if (selectedColors.length < 6) {
-      const newColors = [...selectedColors, "#808080"]; // Add a default gray color
-      const newOpacities = [...opacities, 1]; // Add default opacity
-      setSelectedColors(newColors);
-      setOpacities(newOpacities);
-      onColorsChange(newColors, newOpacities); // Notify parent component
-    }
+    if (selectedColors.length >= 6) return;
+    const newColors = [...selectedColors, "rgba(128,128,128,1)"];
+    setSelectedColors(newColors);
+    onColorsChange(newColors);
   };
 
   const handleContextMenu = (event: React.MouseEvent, index: number) => {
@@ -107,10 +76,8 @@ function SideBar({
   };
 
   const contextMenuRef = React.useRef<HTMLDivElement | null>(null);
-  const handleCloseContextMenu = (event: React.MouseEvent) => {
-    if (contextMenuRef.current && !contextMenuRef.current.contains(event.target as Node)) {
-      setContextMenu({ visible: false, x: 0, y: 0, colorIndex: null });
-    }
+  const handleCloseContextMenu = () => {
+    setContextMenu({ visible: false, x: 0, y: 0, colorIndex: null });
   };
 
   return (
@@ -129,9 +96,8 @@ function SideBar({
               onClick={(e) => e.stopPropagation()}>
               <ColorPicker
                 index={index}
-                color={color}
-                opacity={opacities[index]}
-                onChange={(newColor) => handleColorChange(index, newColor, opacities[index])}
+                rgba={color}
+                onChange={handleColorChange}
               />
             </div>
           ))}
@@ -166,7 +132,12 @@ function SideBar({
         <ToggleGroup
           type="single"
           value={activeItem}
-          onValueChange={(value) => {setActiveItem(value); onActiveItemChange(value);}}
+          onValueChange={(value) => {
+            if (value) {
+              setActiveItem(value);
+              onActiveItemChange(value);
+            }
+          }}
           size="custom"
           className="w-full bg-gray-200 p-1 rounded-lg">
           <ToggleGroupItem value="bold" aria-label="Toggle bold">
@@ -190,10 +161,10 @@ function SideBar({
         <div className="flex items-center gap-2">
           <span className="text-sm">Low</span>
           <Slider
-            min={1}
+            min={5}
             max={1000}
-            value={density} // Sync with state
-            onValueChange={(value) => handleDensityChange(value)}
+            value={[density]} // Sync with state
+            onValueChange={(value: number[]) => handleDensityChange(value[0])}
             className="w-full"
           />
           <span className="text-sm">High</span>

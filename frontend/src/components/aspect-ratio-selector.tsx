@@ -30,7 +30,7 @@ export function SelectAspectRatio({ aspectRatio, onSelect }: SelectAspectRatioPr
 
 
   const handleSelect = (currentValue: string) => {
-    setValue(currentValue === value ? "" : currentValue);
+    setValue(currentValue === value ? "Landscape" : currentValue);
     setOpen(false);
     onSelect(currentValue); // Notify parent about the selection
   };

@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Stage, Layer, Rect } from 'react-konva';
 
+
+
 const generateColors = (rows: number, cols: number): string[] => {
   return Array.from({ length: rows * cols }, () => 
     `#${Math.floor(Math.random() * 16777215).toString(16).padEnd(6, '0')}`
