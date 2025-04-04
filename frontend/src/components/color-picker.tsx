@@ -13,12 +13,10 @@ interface ColorPickerProps {
   onChange: (index: number, newRgba: string) => void;
 }
 
-// Utility: RGBA -> HEX + alpha
+// Utility: RGBA -> HEX + opacity
 const parseRgba = (rgba: string): { hex: string; opacity: number } => {
-  const match = rgba.match(
-    /rgba?\((\d+),\s*(\d+),\s*(\d+),?\s*([01]?\.?\d*)?\)/
-  );
-  if (!match) return { hex: "#808080", opacity: 1 }; // fallback
+  const match = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+),?\s*([01]?\.?\d*)?\)/);
+  if (!match) return { hex: "#808080", opacity: 1 };
 
   const [, r, g, b, a] = match;
   const hex = `#${[r, g, b]
@@ -39,72 +37,63 @@ const toRgbaString = (hex: string, opacity: number): string => {
 const ColorPicker: React.FC<ColorPickerProps> = ({ index, rgba, onChange }) => {
   const { hex, opacity } = parseRgba(rgba);
 
-  const [localHex, setLocalHex] = useState(hex);
-  const [localOpacity, setLocalOpacity] = useState(opacity);
+  const [tempHex, setTempHex] = useState(hex); // Local storage while editing
+  const [tempOpacity, setTempOpacity] = useState(opacity);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false); // Track popover state
 
-  // Sync when rgba prop changes
+  // Sync with external updates
   useEffect(() => {
-    const parsed = parseRgba(rgba);
-    setLocalHex(parsed.hex);
-    setLocalOpacity(parsed.opacity);
+    if (rgba) {
+      const parsed = parseRgba(rgba);
+      setTempHex(parsed.hex);
+      setTempOpacity(parsed.opacity);
+    }
   }, [rgba]);
 
-  const updateParent = (newHex: string, newOpacity: number) => {
-    const rgbaString = toRgbaString(newHex, newOpacity);
+  // Update parent only when popover closes
+  const handlePopoverClose = () => {
+    const rgbaString = toRgbaString(tempHex, tempOpacity);
     onChange(index, rgbaString);
   };
 
-  const handleHexChange = (value: string) => {
-    const isValid = /^#([0-9A-F]{6})$/i.test(value);
-    if (isValid) {
-      setLocalHex(value);
-      updateParent(value, localOpacity);
-    }
-  };
-
-  const handleOpacityChange = (value: number) => {
-    setLocalOpacity(value);
-    updateParent(localHex, value);
-  };
-
   return (
-    <Popover>
+    <Popover open={isPopoverOpen} onOpenChange={(open) => {
+      setIsPopoverOpen(open);
+      if (!open) handlePopoverClose(); // Update parent only when closing
+    }}>
       <PopoverTrigger asChild>
         <div
           className="w-[35px] h-[35px] rounded-full border cursor-pointer"
-          style={{ backgroundColor: toRgbaString(localHex, localOpacity) }}
+          style={{ backgroundColor: toRgbaString(tempHex, tempOpacity) }}
         />
       </PopoverTrigger>
-      <PopoverContent className="bg-white p-4 z-10 rounded-md shadow-xl flex flex-col gap-4">
+      <PopoverContent
+        className="bg-white p-4 z-10 rounded-md shadow-xl flex flex-col gap-4"
+        onMouseDown={(e) => e.stopPropagation()} // Prevent popover from closing
+      >
         {/* Color Picker */}
-        <HexColorPicker
-          color={localHex}
-          onChange={(newColor) => {
-            setLocalHex(newColor);
-            updateParent(newColor, localOpacity);
-          }}
-        />
+        <HexColorPicker color={tempHex} onChange={setTempHex} />
 
-        {/* Manual Input */}
+        {/* HEX Input Field */}
         <label className="text-sm flex flex-col gap-1">
           HEX Color:
           <input
             type="text"
-            value={localHex}
-            onChange={(e) => handleHexChange(e.target.value)}
+            value={tempHex}
+            onChange={(e) => setTempHex(e.target.value)}
             className="border px-2 py-1 rounded-md text-sm"
           />
         </label>
 
-        {/* Opacity */}
+        {/* Opacity Slider */}
         <label className="text-sm flex flex-col gap-1">
-          Opacity: {Math.round(localOpacity * 100)}%
+          Opacity: {Math.round(tempOpacity * 100)}%
           <Slider
             min={0}
             max={1}
             step={0.01}
-            value={[localOpacity]}
-            onValueChange={(value) => handleOpacityChange(value[0])}
+            value={[tempOpacity]}
+            onValueChange={(value) => setTempOpacity(value[0])}
           />
         </label>
       </PopoverContent>

@@ -133,13 +133,15 @@ function SideBar({
           type="single"
           value={activeItem}
           onValueChange={(value) => {
+            console.log("Selected value:", value); // Debugging log
             if (value) {
               setActiveItem(value);
               onActiveItemChange(value);
             }
           }}
           size="custom"
-          className="w-full bg-gray-200 p-1 rounded-lg">
+          className="w-full bg-gray-200 p-1 rounded-lg"
+        >
           <ToggleGroupItem value="bold" aria-label="Toggle bold">
             <Bold className="h-4 w-4" />
           </ToggleGroupItem>
@@ -149,7 +151,8 @@ function SideBar({
           <ToggleGroupItem
             value="strikethrough"
             aria-label="Toggle strikethrough"
-            disabled>
+            disabled
+          >
             <Underline className="h-4 w-4" />
           </ToggleGroupItem>
         </ToggleGroup>
