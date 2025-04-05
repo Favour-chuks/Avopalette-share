@@ -1,15 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 import { Bold, CirclePlus, Italic, Underline } from "lucide-react";
 import ColorPicker from "./color-picker";
-import React from "react";
 import { Slider } from "./ui/slider";
 
 interface SideBarProps {
-  initialColors: string[]; // e.g. ["rgba(255,0,0,0.8)"]
+  initialColors: string[];
   onDensityChange: (density: number) => void;
   onActiveItemChange: (item: string) => void;
-  onColorsChange: (rgbaColors: string[]) => void; // updated to return a single rgba list
+  onColorsChange: (rgbaColors: string[]) => void;
 }
 
 function SideBar({
@@ -18,11 +17,11 @@ function SideBar({
   onDensityChange,
   onActiveItemChange,
 }: SideBarProps) {
-  const [activeItem, setActiveItem] = useState("");
-  const [density, setDensity] = useState(1);
+  const [activeItem, setActiveItem] = useState(""); // Default value
+  const [density, setDensity] = useState(10);
   const [selectedColors, setSelectedColors] = useState(initialColors);
 
-  // State for context menu
+  // Context menu state
   const [contextMenu, setContextMenu] = useState<{
     visible: boolean;
     x: number;
@@ -30,82 +29,93 @@ function SideBar({
     colorIndex: number | null;
   }>({ visible: false, x: 0, y: 0, colorIndex: null });
 
+  const contextMenuRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     console.log("Selected colors updated:", selectedColors);
   }, [selectedColors]);
 
+  // Handle Density Change (only update after user releases slider)
   const handleDensityChange = (newDensity: number) => {
     setDensity(newDensity);
-    onDensityChange(newDensity); // Notify parent component
+    onDensityChange(newDensity);
   };
 
+  // Handle Color Change
   const handleColorChange = (index: number, newRgba: string) => {
     const updatedColors = [...selectedColors];
     updatedColors[index] = newRgba;
     setSelectedColors(updatedColors);
-    onColorsChange(updatedColors); // now returns only rgba list
+    onColorsChange(updatedColors);
   };
 
+  // Handle Remove Color
   const handleRemoveColor = () => {
-    console.log("Removing color at index:", contextMenu.colorIndex);
-    console.log("Current colors:", selectedColors);
     if (contextMenu.colorIndex === null) return;
-
     const updatedColors = selectedColors.filter(
       (_, i) => i !== contextMenu.colorIndex
     );
     setSelectedColors(updatedColors);
     onColorsChange(updatedColors);
+    setContextMenu({ visible: false, x: 0, y: 0, colorIndex: null });
   };
 
+  // Handle Add Color (limit to 6)
   const handleAddColor = () => {
     if (selectedColors.length >= 6) return;
-    const newColors = [...selectedColors, "rgba(128,128,128,1)"];
-    setSelectedColors(newColors);
-    onColorsChange(newColors);
+    setSelectedColors([...selectedColors, "rgba(128,128,128,1)"]);
+    onColorsChange([...selectedColors, "rgba(128,128,128,1)"]);
   };
 
+  // Handle Context Menu (right-click)
   const handleContextMenu = (event: React.MouseEvent, index: number) => {
-    event.preventDefault(); // Prevent the default browser context menu
+    event.preventDefault();
+    const viewportHeight = window.innerHeight;
+    const menuHeight = 50; // Approx height of menu
+
     setContextMenu({
       visible: true,
       x: event.clientX,
-      y: event.clientY,
+      y: event.clientY + menuHeight > viewportHeight ? event.clientY - menuHeight : event.clientY, // Prevent overflow
       colorIndex: index,
     });
   };
 
-  const contextMenuRef = React.useRef<HTMLDivElement | null>(null);
-  const handleCloseContextMenu = () => {
-    setContextMenu({ visible: false, x: 0, y: 0, colorIndex: null });
-  };
+  // Handle Clicking Outside Context Menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (contextMenuRef.current && !contextMenuRef.current.contains(event.target as Node)) {
+        setContextMenu({ visible: false, x: 0, y: 0, colorIndex: null });
+      }
+    };
+
+    if (contextMenu.visible) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [contextMenu.visible]);
 
   return (
-    <div
-      className="flex flex-col gap-4 h-full w-[200px]"
-      onClick={handleCloseContextMenu}>
+    <div className="flex flex-col gap-4 h-full w-[200px]">
       {/* Color Picker Section */}
       <div className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">Color Picker</h2>
         <div className="flex justify-between">
           {selectedColors.map((color, index) => (
             <div
-              key={`${color}-${index}`} // Use a combination of color and index as the key
+              key={`${color}-${index}`}
               className="relative group"
-              onContextMenu={(e) => handleContextMenu(e, index)} // Right-click handler
-              onClick={(e) => e.stopPropagation()}>
-              <ColorPicker
-                index={index}
-                rgba={color}
-                onChange={handleColorChange}
-              />
+              onContextMenu={(e) => handleContextMenu(e, index)}
+            >
+              <ColorPicker index={index} rgba={color} onChange={handleColorChange} />
             </div>
           ))}
           {/* Add Color Button */}
           {selectedColors.length < 6 && (
             <button
               onClick={handleAddColor}
-              className="bg-gray-200 h-[35px] w-[35px] rounded-full">
+              className="bg-gray-200 h-[35px] w-[35px] rounded-full"
+            >
               <CirclePlus className="h-4 w-4 mx-auto my-auto" />
             </button>
           )}
@@ -117,10 +127,9 @@ function SideBar({
         <div
           ref={contextMenuRef}
           className="absolute bg-white border border-gray-300 shadow-lg rounded-md p-2"
-          style={{ top: contextMenu.y, left: contextMenu.x }}>
-          <button
-            onClick={() => handleRemoveColor()}
-            className="text-red-500 hover:text-red-700">
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+        >
+          <button onClick={handleRemoveColor} className="text-red-500 hover:text-red-700">
             Remove Color
           </button>
         </div>
@@ -133,7 +142,6 @@ function SideBar({
           type="single"
           value={activeItem}
           onValueChange={(value) => {
-            console.log("Selected value:", value); // Debugging log
             if (value) {
               setActiveItem(value);
               onActiveItemChange(value);
@@ -142,17 +150,13 @@ function SideBar({
           size="custom"
           className="w-full bg-gray-200 p-1 rounded-lg"
         >
-          <ToggleGroupItem value="bold" aria-label="Toggle bold">
+          <ToggleGroupItem value="bold">
             <Bold className="h-4 w-4" />
           </ToggleGroupItem>
-          <ToggleGroupItem value="italic" aria-label="Toggle italic">
+          <ToggleGroupItem value="italic">
             <Italic className="h-4 w-4" />
           </ToggleGroupItem>
-          <ToggleGroupItem
-            value="strikethrough"
-            aria-label="Toggle strikethrough"
-            disabled
-          >
+          <ToggleGroupItem value="strikethrough" disabled>
             <Underline className="h-4 w-4" />
           </ToggleGroupItem>
         </ToggleGroup>
@@ -164,10 +168,11 @@ function SideBar({
         <div className="flex items-center gap-2">
           <span className="text-sm">Low</span>
           <Slider
-            min={5}
-            max={1000}
-            value={[density]} // Sync with state
-            onValueChange={(value: number[]) => handleDensityChange(value[0])}
+            min={20}
+            max={150}
+            value={[density]}
+            onValueChange={(value) => {setDensity(value[0]); console.log(value[0])}}
+            onValueCommit={(value) => handleDensityChange(value[0])} // Update only when user releases
             className="w-full"
           />
           <span className="text-sm">High</span>

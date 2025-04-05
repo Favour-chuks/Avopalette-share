@@ -1,5 +1,5 @@
 import { Separator } from "@/components/ui/separator";
-import SideBar from "../sidebar";
+import SideBar from "../test-sidebar";
 import Header from "../header";
 import ArtComponent from "../art-component";
 import { useState, useEffect } from "react"; // ✅ Import useEffect
@@ -81,6 +81,7 @@ export default function MainPage() {
               onDensityChange={handleDensityChange}
               onActiveItemChange={handleActiveItemChange}
             />
+          
           </div>
         </div>
       </div>

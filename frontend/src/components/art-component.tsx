@@ -1,77 +1,41 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
 import { Skeleton } from "./ui/skeleton";
-import CanvasMosiac from "./mosiac/canvasMosiac";
-import MosaicCanvas from "./mosiac/testMosiac";
+
+const CanvasMosiac = lazy(() => import("./mosiac/canvasMosiac"));
+const MosaicCanvas = lazy(() => import("./mosiac/testMosiac"));
 
 interface ArtComponentProps {
   density?: number;
-  colors?: string[]; // Now expects rgba values
+  colors?: string[];
   activeItem?: string;
   aspectRatio: number;
 }
 
-function ArtComponent({
-  density,
-  colors,
-  activeItem,
-  aspectRatio,
-}: ArtComponentProps) {
+function ArtComponent({ density = 10, colors = ["rgba(0,0,0,1)"], activeItem, aspectRatio }: ArtComponentProps) {
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check if required props are provided
-  const hasProps =
-    density !== undefined && Array.isArray(colors) && colors.length > 0;
+  // Memoized values
+  const safeAspectRatio = useMemo(() => Math.max(aspectRatio, 1), [aspectRatio]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-
+    const timer = setTimeout(() => setIsLoading(false), 2000);
     return () => clearTimeout(timer);
   }, []);
 
-  if (isLoading || !hasProps || !activeItem) {
+  if (isLoading || !activeItem) {
     return (
       <main className="flex-1 h-full w-full p-[16px] rounded-xl overflow-auto">
-        <Skeleton
-          className="bg-gray-300"
-          style={{
-            width: "100%",
-            height: `calc(100% / ${aspectRatio > 0 ? aspectRatio : 1})`, // Fallback to 1 if aspectRatio is 0
-          }}
-        />
+        <Skeleton className="bg-gray-300" style={{ width: "100%", height: `calc(100% / ${safeAspectRatio})` }} />
       </main>
     );
   }
 
   return (
     <main className="flex-1 h-full w-full p-[16px] rounded-xl">
-      <div className="h-full w-full">
-        {/* Conditional Rendering Based on activeItem */}
-        {activeItem === "bold" && (
-          <CanvasMosiac
-            density={density || 10}
-            colors={colors || ["rgba(0,0,0,1)"]} 
-            width={500}
-            height={500}
-          />
-        )}
-        {activeItem === "italic" && (
-          <MosaicCanvas
-          density={density || 10}
-          colors={colors || ["rgba(0,0,0,1)"]} 
-          aspectRatio={aspectRatio > 0 ? aspectRatio : 1}
-          width={500}
-          height={500}
-        />
-        )}
-        {activeItem === "strikethrough" && (
-          <div>
-            <h3 className="text-md line-through">Strikethrough Mode</h3>
-            <p>Strikethrough mode is currently disabled.</p>
-          </div>
-        )}
-      </div>
+      <Suspense fallback={<Skeleton className="w-full h-full bg-gray-200" />}>
+        {activeItem === "bold" && <CanvasMosiac density={density} colors={colors} width={500} height={500} />}
+        {activeItem === "italic" && <MosaicCanvas density={density} colors={colors} aspectRatio={safeAspectRatio} width={500} height={500} />}
+      </Suspense>
     </main>
   );
 }
