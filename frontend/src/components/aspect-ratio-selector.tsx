@@ -24,16 +24,54 @@ interface SelectAspectRatioProps {
   onSelect: (aspectRatio: string) => void; // Callback for selection
 }
 
-export function SelectAspectRatio({ aspectRatio, onSelect }: SelectAspectRatioProps) {
+export const SelectAspectRatio = React.memo(function SelectAspectRatio({
+  aspectRatio,
+  onSelect,
+}: SelectAspectRatioProps) {
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("Landscape"); // Default to "Landscape"
 
+  // Default to "Landscape" or the first item in the aspectRatio array
+  const defaultValue =
+    aspectRatio.find((r) => r.label === "Landscape")?.value ||
+    aspectRatio[0]?.value ||
+    "";
+  const [value, setValue] = React.useState(defaultValue);
 
-  const handleSelect = (currentValue: string) => {
-    setValue(currentValue === value ? "Landscape" : currentValue);
-    setOpen(false);
-    onSelect(currentValue); // Notify parent about the selection
-  };
+  const handleSelect = React.useCallback(
+    (currentValue: string) => {
+      const newValue = currentValue === value ? defaultValue : currentValue;
+      setValue(newValue);
+      setOpen(false);
+      onSelect(newValue);
+    },
+    [value, defaultValue, onSelect]
+  );
+
+  const selectedLabel = React.useMemo(() => {
+    return (
+      aspectRatio.find((r) => r.value === value)?.label ??
+      "Select aspectRatio..."
+    );
+  }, [aspectRatio, value]);
+
+  const renderedOptions = React.useMemo(
+    () =>
+      aspectRatio.map((aspectRatio) => (
+        <CommandItem
+          key={aspectRatio.value}
+          value={aspectRatio.value}
+          onSelect={handleSelect}>
+          {aspectRatio.label}
+          <Check
+            className={cn(
+              "ml-auto",
+              value === aspectRatio.value ? "opacity-100" : "opacity-0"
+            )}
+          />
+        </CommandItem>
+      )),
+    [aspectRatio, handleSelect, value]
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -43,10 +81,7 @@ export function SelectAspectRatio({ aspectRatio, onSelect }: SelectAspectRatioPr
           role="combobox"
           aria-expanded={open}
           className="w-[200px] justify-between">
-          {value
-            ? aspectRatio.find((aspectRatio) => aspectRatio.value === value)
-                ?.label
-            : "Select aspectRatio..."}
+          {selectedLabel}
           <Proportions className="opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -54,27 +89,10 @@ export function SelectAspectRatio({ aspectRatio, onSelect }: SelectAspectRatioPr
         <Command>
           <CommandList>
             <CommandEmpty>No aspectRatio found.</CommandEmpty>
-            <CommandGroup>
-              {aspectRatio.map((aspectRatio) => (
-                <CommandItem
-                  key={aspectRatio.value}
-                  value={aspectRatio.value}
-                  onSelect={handleSelect}>
-                  {aspectRatio.label}
-                  <Check
-                    className={cn(
-                      "ml-auto",
-                      value === aspectRatio.value
-                        ? "opacity-100"
-                        : "opacity-0"
-                    )}
-                  />
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            <CommandGroup>{renderedOptions}</CommandGroup>
           </CommandList>
         </Command>
       </PopoverContent>
     </Popover>
   );
-}
+});
