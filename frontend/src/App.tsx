@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import MainPage from "./components/pages/main";
-// import PixiMosiac from "./components/test-Pixijs";
+import PixiMosiac from "./components/mosiac/pixiCanvas";
 // import MosaicCanvas from "./components/mosiac/mosiacCanvasShaded";
 function App() {
   const [isScreenCompatible, setIsScreenCompatible] = useState(true);
@@ -39,36 +39,36 @@ function App() {
   }
   
 
-  // const generateRandomHexColor = () => {
-  //   const randomColor = Math.floor(Math.random() * 16777215).toString(16);
-  //   return `#${randomColor.padStart(6, "0")}`;
-  // };
+  const generateRandomHexColor = () => {
+    const randomColor = Math.floor(Math.random() * 16777215).toString(16);
+    return `#${randomColor.padStart(6, "0")}`;
+  };
 
-  // const generateHexColors = (count: number) => {
-  //   const colors = new Set<string>();
-  //   while (colors.size < count) {
-  //     colors.add(generateRandomHexColor());
-  //   }
-  //   return Array.from(colors);
-  // };
+  const generateHexColors = (count: number) => {
+    const colors = new Set<string>();
+    while (colors.size < count) {
+      colors.add(generateRandomHexColor());
+    }
+    return Array.from(colors);
+  };
 
-  // const hexColors = generateHexColors(1000);
+  const hexColors = generateHexColors(1000);
   
   
   return (
     <>
-      {/* <PixiMosiac
+       <PixiMosiac
         width={800}
         height={800}
         density={200000}
         colors={hexColors}
       />
-      <MosaicCanvas
+      {/* <MosaicCanvas
         width={800}
         height={800}
         density={10}
         colors={hexColors}
-      /> */}
+      />  */}
       <MainPage />
     </>
   );
